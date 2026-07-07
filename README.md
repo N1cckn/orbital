@@ -2,7 +2,7 @@
 
 A single-file markets-intelligence dashboard for the space economy: aerospace, defense, and satellite equities on one screen. Built as a portfolio project exploring the intersection of space and finance.
 
-**Live demo:** _add your GitHub Pages link here after deploying_
+**Live demo:** https://n1cckn.github.io/orbital/
 
 ---
 
