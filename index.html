@@ -457,6 +457,44 @@ a.wireit:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .skel-grid .skel{height:130px}
 @keyframes sk{from{background-position:200% 0}to{background-position:-200% 0}}
 
+/* ================= orbit (3D earth) ================= */
+.orbit-grid{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+@media(max-width:920px){.orbit-grid{grid-template-columns:1fr}}
+.globe-card{position:relative;padding:0;overflow:hidden}
+#globeWrap{position:relative;width:100%;aspect-ratio:1.18;max-height:640px;cursor:grab;touch-action:none}
+#globeWrap.grabbing{cursor:grabbing}
+#globe{position:absolute;inset:0;width:100%;height:100%}
+.globe-hud{position:absolute;left:14px;top:12px;display:flex;gap:8px;align-items:center;z-index:3}
+.hud-pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--mut);background:rgba(14,14,23,.7);border:1px solid var(--line);padding:5px 10px;border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.spd{display:flex;gap:4px;position:absolute;right:14px;top:12px;z-index:3}
+.spd button{font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(14,14,23,.7);color:var(--mut);cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.spd button.active{color:var(--acc2);border-color:rgba(63,224,197,.4)}
+.globe-note{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--mut2);z-index:3;background:rgba(14,14,23,.6);padding:4px 9px;border-radius:7px}
+.orbit-side{display:flex;flex-direction:column;gap:12px}
+.legend-list{display:flex;flex-direction:column;gap:6px}
+.lg{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:11px;border:1px solid var(--line);background:var(--srf2);cursor:pointer;transition:.14s;font-size:12.5px}
+.lg:hover{border-color:var(--line2)}
+.lg.off{opacity:.38}
+.lg .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 8px currentColor}
+.lg .nm{flex:1;font-weight:500}
+.lg .ct{font-family:var(--mono);font-size:10px;color:var(--mut2)}
+.satcard{border:1px solid var(--line);border-radius:13px;padding:14px 15px;background:var(--srf2);min-height:118px}
+.satcard .em{color:var(--mut);font-size:12.5px;line-height:1.6}
+.satcard h5{font-family:var(--disp);font-size:14.5px;font-weight:600;margin-bottom:3px}
+.satcard .sub2{font-family:var(--mono);font-size:10px;color:var(--mut2);letter-spacing:.08em;margin-bottom:9px}
+.satcard .row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.satcard .row:last-of-type{border-bottom:none}
+.satcard .row .k{color:var(--mut)} .satcard .row .v{font-family:var(--mono)}
+.satcard .desc{font-size:12px;color:#C7CBDA;line-height:1.6;margin-top:9px}
+.satcard .gochip{margin-top:11px;font-family:var(--mono);font-size:11px;padding:6px 13px;border-radius:999px;border:none;background:var(--grad);color:#0A0A12;font-weight:700;cursor:pointer}
+.ctx-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:14px}
+.ctx{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--srf);cursor:default}
+.ctx.link{cursor:pointer;transition:.15s}
+.ctx.link:hover{border-color:var(--acc);transform:translateY(-2px)}
+.ctx .n{font-family:var(--mono);font-size:17px;font-weight:700;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ctx .k{font-size:11.5px;color:var(--mut);margin-top:4px;line-height:1.55}
+.ctx .k b{color:var(--ink)}
+
 /* legend / footer */
 .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--mut)}
 .legend span{display:flex;align-items:center;gap:7px}
@@ -530,6 +568,7 @@ footer{
     <nav id="nav">
       <button class="nav-b active" data-view="markets">Markets</button>
       <button class="nav-b" data-view="news">News</button>
+      <button class="nav-b" data-view="orbit">Orbit</button>
       <button class="nav-b" data-view="company">Company</button>
       <button class="nav-b" data-view="compare">Compare</button>
       <button class="nav-b" data-view="portfolio">Portfolio Lab</button>
@@ -538,7 +577,7 @@ footer{
     </nav>
     <div class="hd-right">
       <button class="kbd" id="palBtn" title="Quick search">⌘K</button>
-      <span class="live"><i></i>LIVE · SIM</span>
+      <span class="live" id="liveBadge" title="Simulated feed"><i></i>LIVE · SIM</span>
       <span class="clock" id="clock"></span>
     </div>
   </div>
@@ -604,6 +643,45 @@ footer{
   <p class="meth" style="margin-top:16px">Headlines are pulled live from <a href="https://finance.yahoo.com/" target="_blank" rel="noopener" style="color:var(--acc2)">Yahoo Finance</a> ticker feeds (with the <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener" style="color:var(--acc2)">GDELT Project</a> and Hacker News as automatic fallbacks) and refresh every 5 minutes. Each story links to the original publisher. If no feed is reachable, clearly-labeled sample headlines are shown instead.</p>
 </section>
 
+<!-- ============ ORBIT ============ -->
+<section class="view" id="view-orbit">
+  <div class="sechead" style="margin-top:0">
+    <div><div class="eyebrow">Live orbital picture</div><h2>Who's in orbit</h2></div>
+    <span class="sub" style="text-align:right">Drag to spin the Earth · tap a satellite for details · toggle constellations in the legend</span>
+  </div>
+  <div class="orbit-grid">
+    <div class="card globe-card">
+      <div class="globe-hud">
+        <div class="spd" style="position:static" id="bodyCtl">
+          <button data-b="earth" class="active">🜨 EARTH</button><button data-b="mars">♂ MARS</button>
+        </div>
+        <span class="hud-pill" id="satCount"></span>
+      </div>
+      <div class="spd" id="spdCtl">
+        <button data-s="0">❙❙</button><button data-s="1" class="active">1×</button><button data-s="8">8×</button><button data-s="40">40×</button>
+      </div>
+      <div id="globeWrap"><canvas id="globe"></canvas></div>
+      <div class="globe-note" id="globeNote">ALTITUDES COMPRESSED FOR READABILITY · CONSTELLATION GEOMETRY REPRESENTATIVE</div>
+    </div>
+    <div class="orbit-side">
+      <div class="card tight">
+        <h3>Constellations</h3>
+        <div class="legend-list" id="orbitLegend"></div>
+      </div>
+      <div class="satcard" id="satCard">
+        <h5>Select a satellite</h5>
+        <p class="em">Click or tap any dot in orbit to see what it is, who operates it, and which ticker it ties back to.</p>
+      </div>
+    </div>
+  </div>
+  <div class="ctx-strip">
+    <div class="ctx" id="ctx1"><div class="n">~12,900</div><div class="k"><b>Active satellites</b> in orbit — up ~4× in five years as launch costs fell 95%+</div></div>
+    <div class="ctx" id="ctx2"><div class="n">66</div><div class="k"><b>Iridium's lattice</b> — 6 planes × 11 satellites, the geometry shown here is the real design</div></div>
+    <div class="ctx link" id="ctxAst"><div class="n">Asteroids →</div><div class="k"><b>The venture frontier:</b> AstroForge, TransAstra & Karman+ are flying prospecting hardware — see IPO Watch</div></div>
+    <div class="ctx link" id="ctxAI"><div class="n">AI × space →</div><div class="k"><b>From imagery analytics to autonomous landings</b> — every company page has an "AI angle" line</div></div>
+  </div>
+</section>
+
 <!-- ============ COMPANY ============ -->
 <section class="view" id="view-company">
   <div class="crow" id="crow"></div>
@@ -651,7 +729,7 @@ footer{
   <div class="grid g2" style="margin-top:14px">
     <div class="card"><h3>Fundamentals</h3><div id="fund"></div></div>
     <div class="card"><h3>Valuation & Risk</h3><div id="val"></div></div>
-    <div class="card"><h3>Investment view</h3><p class="insight" id="insight"></p></div>
+    <div class="card"><h3>Investment view</h3><p class="insight" id="insight"></p><p class="meth" id="aiAngle" style="border-top:1px solid var(--line);padding-top:11px"></p></div>
     <div class="card"><h3>Risk flags</h3><div class="flags" id="flags"></div></div>
     <div class="card"><h3>Orbital Score</h3>
       <div class="score-wrap">
@@ -765,7 +843,7 @@ footer{
 </div>
 
 <footer>
-  <span>ORBITAL · portfolio project · simulated live feed & illustrative dataset — not investment advice or real-time market data</span>
+  <span>ORBITAL · portfolio project · prices via Yahoo Finance when reachable (may be delayed), otherwise a labeled simulated feed · fundamentals illustrative · not investment advice</span>
   <span id="footDate"></span>
 </footer>
 </main>
@@ -870,6 +948,9 @@ const IPOS=[
 {n:"Impulse Space",f:"In-space mobility · orbital transfer",v:"$1B+",r:"Series C",b:["cold","EARLY"],note:"Fast-growing kick-stage and orbital-transfer franchise led by a founding SpaceX engineer. Strong defense interest in maneuverable spacecraft."},
 {n:"Astranis",f:"Small GEO communications satellites",v:"$1.6B+",r:"Series D",b:["warm","WATCH"],note:"Dedicated small-GEO broadband with contracted, utility-like revenue per satellite — the kind of model public investors can underwrite."},
 {n:"Varda Space",f:"In-space manufacturing · re-entry",v:"$500M+",r:"Series C",b:["cold","EARLY"],note:"Pharmaceutical crystallization in microgravity plus hypersonic re-entry testing revenue. Small but category-defining."},
+{n:"AstroForge",f:"Asteroid mining · deep-space prospecting",v:"$200M+",r:"Series B",b:["cold","DEEP FRONTIER"],note:"Second-wave asteroid miner that's actually flying: first commercial deep-space prospecting missions toward a metallic near-Earth asteroid. Pre-revenue on mining itself — the ultimate venture-horizon space bet."},
+{n:"TransAstra",f:"Asteroid capture · optical mining · space logistics",v:"$100M+",r:"Seed/strategic",b:["cold","DEEP FRONTIER"],note:"Developing capture bags and concentrated-sunlight 'optical mining' for asteroid volatiles, with nearer-term revenue from debris capture and space logistics contracts."},
+{n:"Muon Space",f:"Satellite constellations-as-a-service",v:"$500M+",r:"Series B ext.",b:["warm","WATCH"],note:"Builds and operates custom LEO constellations for customers (wildfire detection, weather, defense) — a picks-and-shovels satellite play riding the falling cost-to-orbit curve."},
 {n:"K2 Space",f:"Mass-manufactured large satellites",v:"$1B+",r:"Series B",b:["cold","EARLY"],note:"Betting that heavy-lift abundance flips satellite design toward big, cheap, powerful buses. Defense anchor contracts arriving early."},
 ];
 
@@ -977,6 +1058,7 @@ function setView(v){
   document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id==="view-"+v));
   if(v==="markets"){drawIdx();renderMovers();renderHeat();renderTable();}
   if(v==="news"){buildNewsChips();loadNews(false);startNewsTimer();}
+  if(v==="orbit")orbitEnter();else orbitLeave();
   if(v==="company")renderCompany();
   if(v==="compare"){buildCmpChips();drawCmp();renderCmpTable();}
   if(v==="portfolio"){buildPfRow();renderPf();}
@@ -1025,18 +1107,83 @@ document.getElementById("belt").addEventListener("click",e=>{
 });
 
 /* ---------------- live tick engine ---------------- */
-const liveRnd=mulberry32(Date.now()%100000);
-function tick(){
-  COS.forEach(c=>{
-    c.live*=1+(liveRnd()-.5)*c.vol*.12;
-    c.intra.push({d:new Date(),p:c.live});
-    if(c.intra.length>420)c.intra.shift();
-  });
+const LIVE={mode:"sim",lastSync:null,fails:0};
+function setLiveBadge(){
+  const b=document.getElementById("liveBadge");
+  if(LIVE.mode==="mkt"){
+    b.innerHTML="<i></i>LIVE · MKT";
+    b.title="Real market quotes (may be ~15 min delayed) via Yahoo Finance · last sync "+(LIVE.lastSync?LIVE.lastSync.toUTCString().slice(17,25)+" UTC":"—");
+  }else{
+    b.innerHTML="<i></i>LIVE · SIM";
+    b.title="Simulated feed — real-quote source unreachable, prices are illustrative";
+  }
+}
+async function fetchRealQuotes(){
+  if(document.hidden)return;
+  try{
+    const syms=COS.map(c=>c.tkr).join(",");
+    const y=`https://query1.finance.yahoo.com/v8/finance/spark?symbols=${syms}&range=1d&interval=5m&includePrePost=false`;
+    const res=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(y)}`,{signal:AbortSignal.timeout(10000)});
+    if(!res.ok)throw new Error("quotes "+res.status);
+    const j=await res.json();
+    const arr=(j.spark&&j.spark.result)||j.result||[];
+    let applied=0;
+    arr.forEach(item=>{
+      const sym=item.symbol,resp=item.response&&item.response[0];
+      if(!sym||!resp)return;
+      const c=byT(sym);if(!c)return;
+      const meta=resp.meta||{};
+      const prev=meta.chartPreviousClose||meta.previousClose;
+      const closes=(((resp.indicators||{}).quote||[])[0]||{}).close||[];
+      const stamps=resp.timestamp||[];
+      let px=meta.regularMarketPrice;
+      const intra=[];
+      for(let i=0;i<closes.length;i++){
+        if(closes[i]!=null&&stamps[i]){intra.push({d:new Date(stamps[i]*1000),p:closes[i]});px=px||closes[i]}
+      }
+      if(intra.length&&!meta.regularMarketPrice)px=intra[intra.length-1].p;
+      if(!px||!prev)return;
+      c.live=px;c.prevClose=prev;
+      if(intra.length>3)c.intraReal=intra;
+      applied++;
+    });
+    if(applied<COS.length*0.6)throw new Error("quotes sparse "+applied);
+    LIVE.mode="mkt";LIVE.lastSync=new Date();LIVE.fails=0;
+  }catch(e){
+    LIVE.fails++;
+    if(LIVE.fails>=2)LIVE.mode="sim"; /* fall back after repeated failures */
+  }
+  setLiveBadge();
+  refreshLiveViews(true);
+}
+function refreshLiveViews(full){
   updateBelt();
   if(state.view==="markets"){updateIdxLive();renderMovers();renderHeat();updateTableLive();}
-  if(state.view==="company"){updateCoLive();if(state.range==="1D")drawCoChart();}
+  if(state.view==="company"){updateCoLive();if(state.range==="1D"&&full)drawCoChart();}
+  if(state.view==="map"&&full)drawMap();
+  if(state.view==="portfolio")pfStatsOut();
+}
+const liveRnd=mulberry32(Date.now()%100000);
+function tick(){
+  if(LIVE.mode!=="mkt"){ /* simulate only when no real feed */
+    COS.forEach(c=>{
+      c.live*=1+(liveRnd()-.5)*c.vol*.12;
+      c.intra.push({d:new Date(),p:c.live});
+      if(c.intra.length>420)c.intra.shift();
+    });
+  }
+  refreshLiveViews(LIVE.mode!=="mkt");
+  if(state.view==="company"&&LIVE.mode!=="mkt"&&state.range==="1D")drawCoChart();
 }
 setInterval(tick,2500);
+setInterval(fetchRealQuotes,180000);
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden){
+    if(!LIVE.lastSync||Date.now()-LIVE.lastSync.getTime()>180000)fetchRealQuotes();
+    if(state.view==="news")loadNews(false);
+  }
+});
+setTimeout(fetchRealQuotes,1200);
 
 /* ---------------- generic hover (mouse + touch) ---------------- */
 function hover(svg,tip,box,getPt,n,x0,x1,vb){
@@ -1274,6 +1421,8 @@ function renderCompany(){
   ].map(([k,v])=>`<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
 
   document.getElementById("insight").textContent=c.insight;
+  const aiEl=document.getElementById("aiAngle");
+  if(aiEl)aiEl.innerHTML="<b style='color:var(--acc2)'>AI angle:</b> "+(AI_ANGLE[c.tkr]||"—");
   document.getElementById("flags").innerHTML=c.flags.map(([l,t])=>
     `<div class="flag"><span class="lvl ${l}">${l==="hi"?"HIGH":l==="md"?"MED":"LOW"}</span><p>${t}</p></div>`).join("");
   renderScore(c);renderSbx();
@@ -1299,7 +1448,7 @@ function scnNote(){
 /* ---------------- company chart ---------------- */
 function seriesFor(c){
   switch(state.range){
-    case "1D": return {data:c.intra,fx:fTime,proj:false};
+    case "1D": return {data:(LIVE.mode==="mkt"&&c.intraReal&&c.intraReal.length>3)?c.intraReal:c.intra,fx:fTime,proj:false};
     case "1M": return {data:c.hist.slice(-30),fx:d=>MO[d.getMonth()]+" "+d.getDate(),proj:false};
     case "6M": return {data:c.hist.slice(-182),fx:fShort,proj:true};
     case "1Y": return {data:c.hist.slice(-365),fx:fShort,proj:true};
@@ -1528,49 +1677,80 @@ function renderIpo(){
 function drawMap(){
   const svg=document.getElementById("mapChart");svg.innerHTML="";
   const mob=isMobile();
-  const W=mob?640:1180,H=mob?560:560,L=mob?56:76,R=mob?20:34,T=30,B=58;
+  const W=mob?640:1180,H=560,L=mob?56:76,R=mob?20:34,T=30,B=58;
   svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
   const gc={launch:"#3FE0C5",sat:"#8B7BFF",prime:"#F5B85C"};
   const xmin=-8,xmax=Math.max(...COS.map(c=>Math.min(c.revG,120)))*1.1;
   const ymin=-50,ymax=Math.max(...COS.map(c=>c.om))+8;
   const x=v=>L+(v-xmin)/(xmax-xmin)*(W-L-R);
   const y=v=>T+(1-(v-ymin)/(ymax-ymin))*(H-T-B);
-  svg.appendChild(el("rect",{x:x(0),y:T,width:W-R-x(0),height:y(0)-T,fill:"#34D399",opacity:.035,rx:8}));
+  const defs=el("defs",{});
+  defs.innerHTML=`
+    <radialGradient id="bg-launch"><stop offset="0" stop-color="#3FE0C5" stop-opacity=".55"/><stop offset=".7" stop-color="#3FE0C5" stop-opacity=".16"/><stop offset="1" stop-color="#3FE0C5" stop-opacity=".05"/></radialGradient>
+    <radialGradient id="bg-sat"><stop offset="0" stop-color="#8B7BFF" stop-opacity=".55"/><stop offset=".7" stop-color="#8B7BFF" stop-opacity=".16"/><stop offset="1" stop-color="#8B7BFF" stop-opacity=".05"/></radialGradient>
+    <radialGradient id="bg-prime"><stop offset="0" stop-color="#F5B85C" stop-opacity=".55"/><stop offset=".7" stop-color="#F5B85C" stop-opacity=".16"/><stop offset="1" stop-color="#F5B85C" stop-opacity=".05"/></radialGradient>
+    <linearGradient id="qNE" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#34D399" stop-opacity="0"/><stop offset="1" stop-color="#34D399" stop-opacity=".08"/></linearGradient>
+    <linearGradient id="qSW" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FB7185" stop-opacity="0"/><stop offset="1" stop-color="#FB7185" stop-opacity=".07"/></linearGradient>`;
+  svg.appendChild(defs);
+  svg.appendChild(el("rect",{x:x(0),y:T,width:W-R-x(0),height:y(0)-T,fill:"url(#qNE)",rx:10}));
+  svg.appendChild(el("rect",{x:L,y:y(0),width:x(0)-L,height:H-B-y(0),fill:"url(#qSW)",rx:10}));
   [0,20,40,60,80,100].filter(v=>v<xmax).forEach(v=>{
-    svg.appendChild(el("line",{x1:x(v),x2:x(v),y1:T,y2:H-B,stroke:"rgba(255,255,255,.05)"}));
+    svg.appendChild(el("line",{x1:x(v),x2:x(v),y1:T,y2:H-B,stroke:"rgba(255,255,255,.07)","stroke-dasharray":"1 5"}));
     const t=el("text",{x:x(v),y:H-34,fill:"#5C6075","font-size":10.5,"text-anchor":"middle","font-family":"JetBrains Mono"});
     t.textContent=v+"%";svg.appendChild(t);
   });
   [-40,-20,0,10,20].forEach(v=>{
     const s=v===0;
-    svg.appendChild(el("line",{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:s?"rgba(255,255,255,.2)":"rgba(255,255,255,.05)","stroke-width":s?1.3:1}));
-    const t=el("text",{x:L-9,y:y(v)+4,fill:"#5C6075","font-size":10.5,"text-anchor":"end","font-family":"JetBrains Mono"});
+    svg.appendChild(el("line",{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:s?"rgba(255,255,255,.28)":"rgba(255,255,255,.07)","stroke-width":s?1.3:1,"stroke-dasharray":s?"":"1 5"}));
+    const t=el("text",{x:L-9,y:y(v)+4,fill:s?"#8F94A9":"#5C6075","font-size":10.5,"text-anchor":"end","font-family":"JetBrains Mono"});
     t.textContent=v+"%";svg.appendChild(t);
   });
-  const xt=el("text",{x:(L+W-R)/2,y:H-10,fill:"#5C6075","font-size":11,"text-anchor":"middle","font-family":"JetBrains Mono","letter-spacing":"3"});
-  xt.textContent="REVENUE GROWTH →";svg.appendChild(xt);
-  const yt=el("text",{x:20,y:(T+H-B)/2,fill:"#5C6075","font-size":11,"text-anchor":"middle","font-family":"JetBrains Mono","letter-spacing":"3",transform:`rotate(-90 20 ${(T+H-B)/2})`});
-  yt.textContent="OPERATING MARGIN →";svg.appendChild(yt);
-  const ql=el("text",{x:W-R-12,y:T+20,fill:"#34D399","font-size":10.5,"text-anchor":"end","font-family":"JetBrains Mono",opacity:.8});
-  ql.textContent="GROWING + PROFITABLE ↗";svg.appendChild(ql);
+  svg.appendChild(el("line",{x1:x(0),x2:x(0),y1:T,y2:H-B,stroke:"rgba(255,255,255,.28)","stroke-width":1.3}));
+  const xt=el("text",{x:(L+W-R)/2,y:H-10,fill:"#8F94A9","font-size":11,"text-anchor":"middle","font-family":"JetBrains Mono","letter-spacing":"3"});
+  xt.textContent="REVENUE GROWTH \u2192";svg.appendChild(xt);
+  const yt=el("text",{x:20,y:(T+H-B)/2,fill:"#8F94A9","font-size":11,"text-anchor":"middle","font-family":"JetBrains Mono","letter-spacing":"3",transform:`rotate(-90 20 ${(T+H-B)/2})`});
+  yt.textContent="OPERATING MARGIN \u2192";svg.appendChild(yt);
+  const quad=(tx,px,py,anchor,color)=>{
+    const t=el("text",{x:px,y:py,fill:color,"font-size":mob?9:10,"text-anchor":anchor,"font-family":"JetBrains Mono","letter-spacing":"2",opacity:.75});
+    t.textContent=tx;svg.appendChild(t);
+  };
+  quad("\u25C7 COMPOUNDERS \u2014 GROWING + PROFITABLE",W-R-12,T+20,"end","#34D399");
+  quad("\u25C7 CASH COWS \u2014 PROFITABLE, SLOW",L+12,T+20,"start","#F5B85C");
+  quad("\u25C7 BETTING ON THE FUTURE",W-R-12,H-B-14,"end","#8B7BFF");
+  quad("\u25C7 SHOW-ME STORIES",L+12,H-B-14,"start","#FB7185");
   const bubbles=[];
   const bScale=mob?1.7:2.6,bBase=mob?6:8;
-  COS.forEach(c=>{
+  [...COS].sort((a,b)=>b.mcap-a.mcap).forEach(c=>{
     const cx=x(Math.min(c.revG,xmax-3)),cy=y(Math.max(c.om,-45));
     const r=bBase+Math.sqrt(c.mcap)*bScale;
-    const col=gc[c.group];
-    svg.appendChild(el("circle",{cx,cy,r,fill:col,opacity:.2,stroke:col,"stroke-width":1.6}));
-    const t=el("text",{x:cx,y:cy-r-8,fill:"#F2F3F8","font-size":11.5,"text-anchor":"middle","font-family":"JetBrains Mono","font-weight":700});
-    t.textContent=c.tkr;svg.appendChild(t);
-    bubbles.push({c,cx,cy,r,col});
+    const ch=dayChg(c);
+    svg.appendChild(el("circle",{cx,cy,r:r+3.5,fill:"none",stroke:ch>=0?"#34D399":"#FB7185","stroke-width":1.4,opacity:.5,"stroke-dasharray":"3 4"}));
+    const b=el("circle",{cx,cy,r,fill:`url(#bg-${c.group})`,stroke:gc[c.group],"stroke-width":1.6});
+    b.style.transition="r .18s, stroke-width .18s";
+    svg.appendChild(b);
+    const inside=r>22;
+    const t=el("text",{x:cx,y:inside?cy+4:cy-r-9,fill:"#F2F3F8","font-size":inside?12.5:11,"text-anchor":"middle","font-family":"JetBrains Mono","font-weight":700});
+    t.textContent=c.tkr;t.style.pointerEvents="none";svg.appendChild(t);
+    bubbles.push({c,cx,cy,r,col:gc[c.group],el:b});
+  });
+  const lgx=W-R-(mob?96:130),lgy=H-B-(mob?100:110);
+  [["$120B",12],["$10B",6]].forEach(([lb,rr],i)=>{
+    svg.appendChild(el("circle",{cx:lgx,cy:lgy+i*28,r:rr,fill:"none",stroke:"#5C6075","stroke-width":1}));
+    const t=el("text",{x:lgx+22,y:lgy+i*28+4,fill:"#5C6075","font-size":9.5,"font-family":"JetBrains Mono"});
+    t.textContent=lb+" mkt cap";svg.appendChild(t);
   });
   const tip=document.getElementById("mapTip"),box=document.getElementById("mapBox");
+  let hovered=null;
   svg.onmousemove=ev=>{
     const rc=svg.getBoundingClientRect();
     const mx=(ev.clientX-rc.left)*(W/rc.width),my=(ev.clientY-rc.top)*(H/rc.height);
     const hit=bubbles.find(b=>Math.hypot(mx-b.cx,my-b.cy)<b.r+7);
+    if(hovered&&hovered!==hit){hovered.el.setAttribute("r",hovered.r);hovered.el.setAttribute("stroke-width",1.6)}
+    hovered=hit||null;
     if(!hit){tip.style.opacity=0;return}
-    tip.innerHTML=`<b style="color:${hit.col}">${hit.c.tkr}</b> ${hit.c.name}<br><span class="d">Growth ${pc(hit.c.revG,0)} · Margin ${pc(hit.c.om,0)}${hit.c.om<-45?" (clamped)":""}<br>Mkt cap ${fB(hit.c.mcap)}</span>`;
+    hit.el.setAttribute("r",hit.r*1.12);hit.el.setAttribute("stroke-width",2.4);
+    const ch=dayChg(hit.c);
+    tip.innerHTML=`<b style="color:${hit.col}">${hit.c.tkr}</b> ${hit.c.name} <span style="color:var(--${cls(ch)})">${pc(ch)}</span><br><span class="d">Growth ${pc(hit.c.revG,0)} \u00b7 Margin ${pc(hit.c.om,0)}${hit.c.om<-45?" (clamped)":""}<br>Mkt cap ${fB(hit.c.mcap)} \u00b7 Score ${Math.round(scoreOf(hit.c).total)}</span>`;
     tip.style.opacity=1;
     const sc=box.clientWidth/W;
     let left=hit.cx*sc+16;
@@ -1578,7 +1758,7 @@ function drawMap(){
     tip.style.left=left+"px";
     tip.style.top=Math.max(4,hit.cy*sc-tip.offsetHeight-14)+"px";
   };
-  svg.onmouseleave=()=>tip.style.opacity=0;
+  svg.onmouseleave=()=>{tip.style.opacity=0;if(hovered){hovered.el.setAttribute("r",hovered.r);hovered.el.setAttribute("stroke-width",1.6);hovered=null}};
   svg.style.cursor="pointer";
   svg.onclick=ev=>{
     const rc=svg.getBoundingClientRect();
@@ -1765,9 +1945,12 @@ function pfStatsOut(){
   const iret=idx[idx.length-1]/10000-1;
   const sharpe=(ret-.04)/(vol||1);
   const alpha=(ret-iret)*100;
+  const wn=pfWeights();
+  let liveDay=0;PF.sel.forEach(t=>liveDay+=wn[t]*dayChg(byT(t)));
   document.getElementById("pfStats").innerHTML=[
     ["12M return",`<span style="color:var(--${cls(ret)})">${pc(ret*100,1)}</span>`],
     ["vs ORBX index",`<span style="color:var(--${cls(alpha)})">${pc(alpha,1)}</span>`],
+    ["Today (live)",`<span style="color:var(--${cls(liveDay)})">${pc(liveDay)}</span>`],
     ["Volatility (ann.)",pc(vol*100,0).replace("+","")],
     ["Max drawdown",`<span style="color:var(--dn)">${pc(dd*100,1)}</span>`],
     ["Sharpe ratio",sharpe.toFixed(2)],
@@ -1815,7 +1998,7 @@ function drawCorr(){
 function renderPf(){renderHolds();drawPfChart();drawDonut();pfStatsOut();drawCorr()}
 
 /* ---------------- command palette ---------------- */
-const PAL_VIEWS=[["Markets","markets"],["Compare","compare"],["Portfolio Lab","portfolio"],["IPO Watch","ipo"],["Sector Map","map"]];
+const PAL_VIEWS=[["Markets","markets"],["News","news"],["Orbit","orbit"],["Compare","compare"],["Portfolio Lab","portfolio"],["IPO Watch","ipo"],["Sector Map","map"]];
 const pal=document.getElementById("pal"),palIn=document.getElementById("palIn"),palList=document.getElementById("palList");
 let palSel=0;
 function palOpen(){pal.classList.add("open");palIn.value="";palRender("");palIn.focus()}
@@ -2043,13 +2226,354 @@ document.getElementById("newsRefresh").addEventListener("click",async e=>{
   b.classList.remove("spin");b.textContent="↻ REFRESH";
 });
 function startNewsTimer(){
-  clearInterval(NEWS.timer);
-  NEWS.timer=setInterval(()=>{if(state.view==="news")loadNews(true)},5*60e3);
+  if(NEWS.timer)return;
+  NEWS.timer=setInterval(async()=>{
+    if(document.hidden)return;
+    const f=NEWS.filter;
+    /* refresh cache in background; render only if the tab is open */
+    NEWS.cache[f]=null;
+    if(state.view==="news")await loadNews(true);
+    else{
+      try{
+        let items;
+        try{items=await fetchYahoo(f);NEWS.mode="live";NEWS.provider="YAHOO FINANCE"}
+        catch(e0){try{items=await fetchGdelt(f);NEWS.mode="live";NEWS.provider="GDELT"}
+        catch(e1){try{items=await fetchHN(f);NEWS.mode="live";NEWS.provider="HACKER NEWS"}
+        catch(e2){items=sampleNews(f);NEWS.mode="sample";NEWS.provider=null}}}
+        NEWS.cache[f]={items:dedupeNews(items).slice(0,24),t:Date.now()};
+        NEWS.last=new Date();
+      }catch(e){}
+    }
+  },5*60e3);
 }
+
+/* ---------------- company AI angles ---------------- */
+const AI_ANGLE={
+  RKLB:"ML-driven launch telemetry and anomaly detection; autonomy is core to Neutron's reusability program.",
+  ASTS:"AI-managed beamforming and spectrum optimization across the constellation — the network runs on ML.",
+  LUNR:"Terrain-relative navigation: machine-vision hazard avoidance guides the landers with no human in the loop.",
+  PL:"The clearest AI story in coverage — the fleet's imagery is only monetizable through ML analytics products.",
+  RDW:"Applying ML to in-space manufacturing control and digital-engineering workflows across programs.",
+  SPCE:"Limited AI exposure; flight software is conventional aerospace autonomy.",
+  FLY:"Blue Ghost's landings relied on ML-based hazard-avoidance vision — autonomy is a proven differentiator.",
+  IRDM:"AI at the edge: customers run analytics on Iridium-connected IoT devices worldwide.",
+  GSAT:"Network-optimization ML, and its anchor partner's on-device AI increasingly drives satellite feature demand.",
+  KTOS:"Collaborative combat drones are applied autonomy — here, the AI effectively is the product.",
+  AVAV:"Switchblade targeting plus BlueHalo's AI and laser-comms lines make this a defense-AI play.",
+  LMT:"Heavy investment in sensor fusion, ISR processing, and classified autonomy programs.",
+  NOC:"AI in missile-defense tracking, space-domain awareness, and battle-management systems.",
+  BA:"AI in manufacturing QA and predictive maintenance — operational, not an equity driver.",
+};
+
+
+/* ---------------- ORBIT: interactive 3D Earth & Mars ---------------- */
+const LAND_B64="////////////////////////////////////////////////Af/////////////////////4AH/////4AP////////////8AAD////6IDH////////////+AAAP////4AAf///////////+AAAAEAP6/AAA////////////gAAAAAAAeAAAE////5//////gAAAAAAAGAAAAAAT/8f////wAAAAAAAACAAAAAAAMAADMDAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAAQQAAAAAAcAAAAAAAAAAAAAAAIAAAAAAA8AAAAAAAAAAAAACAEAAAAAAAfAAAAAAAAAAAAAAACAAAAAAAfgAAAAAAAAAAAAPAAAAAAAAAf4AAAAeAAAAADg/gAAAAAAAAf4AAAAfAAAAAD//gAAAAAAAAf8AAAAfgAAAAD//gAAAAAAAAP8AAAA/gAAAAD//gAAAAAAAAP/AAAA/xgAAAH//gAAAAAAAAP/wAAB/wgAAAD//AAAAAAAAAP/wAAB/4wAAAAf+AAAAAAAAAf/wAAB/8wAAAAfkAAAAAAAAA//wAAB/8QAAAADAAAAAAAAAB//4AAA/8AAAAACAAAAAAAAAD//8AAB/8AAAACoIAAAAAAAAD//8AAB/8AAAAgAeAAAAAAAAD//4AAD/8AAABCg8AAAAAAAAD/9AAAD/+AAAHOjAAAAAAAAAD/8AAAD//AAACOAAAAAAAAAAB/8AAAH//gAAGGAAAAAAAAAAB/gAAPv//wAICAAAAAAAAAAAF/AAAf///wAAEAAAAAAAAAAAAoAAB///+QAwBwQAAAAAAAAA4AAAB////gAwHwwAAAAAAAAHgBAAB///94BwHggAAAAAAAA9gYAAA///7+B8fQAAAAAAAAA4gAAAB///7/D+fgAAAAAAAAB4AAAAA///3+H//+gAAAAAAAD4EAAAA///3x////AAAAAAAAP8EAAAAP///v////gAAAAAAAX/4AAAAP/Ov/////gAAAAAAAf/8AAAAH8AP/////BAAAAAAB///AAAAA8Af/////EwAAAAAB///AAAAPAp/////+IIAAAAAD///gAAAHhvb/////8IAAAAAD///wAAAB6+D//////EAAAAAB///9AAAA//X//////oAAAAAD///0QAAB/////////wAAAAAH////wAAB/////////wAABAAP//7/gAAJH////////wMAAIAf//j+AAACFP///////gOAAGB//+B+AAAAPj///////4DAA////8BgBgAAPn////////64AP////UcHwCAH3//////////8P////4+H8BAA/0/////////A///1Ft4H/gAA/4V6///////gEAAfG/wP/4AAAAEHf//9/gAAAADwLQAP/8AAAAGAD/oAIAAAAABC7AP//+AAAAA4AL4AAAAAAAAAz/P//8AB4AAAADAAAAAAAAAAC/0//7gAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const ORBIT={running:false,raf:0,rotY:.6,tilt:-.42,vx:0,drag:null,t:0,spd:1,sel:null,selGrp:null,earthSpin:0,groups:[],last:0,inited:false,body:"earth",allGroups:{},landEarth:[],landMars:[]};
+/* [name, color, ticker, altKm, visR, inclDeg, planes, perPlane, blurb] */
+const EARTH_CONS=[
+ ["Starlink (sample)","#9CA3AF",null,550,1.075,53,6,10,"SpaceX's broadband mega-constellation — 7,000+ active satellites. Showing a 60-satellite sample of one shell. The demand engine behind the entire launch economy."],
+ ["Iridium NEXT","#818CF8","IRDM",780,1.10,86.4,6,11,"The real 66-satellite lattice: 6 near-polar planes × 11 satellites give truly global coverage — the geometry shown here is Iridium's actual design."],
+ ["Planet Doves","#A78BFA","PL",475,1.06,97.4,2,12,"Sun-synchronous imaging fleet (~200 satellites; 24 shown) photographing Earth's entire landmass daily — monetized through machine-learning analytics."],
+ ["AST BlueBirds","#8B7BFF","ASTS",520,1.065,53,1,6,"School-bus-sized satellites with enormous antennas beaming broadband directly to unmodified smartphones. Constellation build-out underway."],
+ ["Globalstar","#6366F1","GSAT",1414,1.16,52,4,6,"IoT and messaging constellation — the space segment behind a certain phone maker's satellite emergency features."],
+ ["GPS III","#FBBF24","LMT",20180,1.5,55,6,2,"Lockheed Martin-built navigation backbone in medium-Earth orbit (12 of 31 shown). Every timestamp in this app ultimately traces to its clocks."],
+ ["GEO belt","#F5B85C",null,35786,1.78,0,1,10,"The geostationary ring: satellites orbiting at Earth's spin rate so they hover over one spot — watch them hold still relative to the ground below. Home of big comms birds and Astranis-class small GEOs."],
+ ["ISS","#3FE0C5",null,420,1.05,51.6,1,1,"The International Space Station — humanity's orbital outpost, and the destination anchoring Axiom's commercial-station plans."],
+];
+/* Mars: mostly single real spacecraft. extra field surf:[[lat,lon,site],...] for rovers */
+const MARS_CONS=[
+ ["ESCAPADE (Rocket Lab)","#3FE0C5","RKLB",6000,1.32,60,1,2,"Twin Rocket Lab-built smallsats studying how the solar wind strips Mars' atmosphere — the proof that interplanetary science now fits a smallsat budget."],
+ ["Mars Recon. Orbiter","#8B7BFF",null,290,1.08,92.6,1,1,"NASA's workhorse since 2006 — its HiRISE camera has scouted every modern landing site and it relays most rover data home."],
+ ["MAVEN","#A78BFA",null,4500,1.26,74,1,1,"NASA's upper-atmosphere sentinel, measuring how Mars lost its air — and moonlighting as a comms relay."],
+ ["Mars Odyssey","#7DD3FC",null,400,1.10,93.1,1,1,"The longest-serving spacecraft at another planet — mapping Mars since 2001."],
+ ["Mars Express","#67E8F9",null,5200,1.29,86.9,1,1,"ESA's veteran orbiter, over two decades of radar sounding and imaging since 2003."],
+ ["ExoMars TGO","#6366F1",null,400,1.115,74,1,1,"ESA's Trace Gas Orbiter — the methane hunter, and Europe's primary Mars relay."],
+ ["Tianwen-1","#FCA5A5",null,10000,1.42,86.9,1,1,"China's first independent Mars mission — orbiter plus the Zhurong rover, all on the first try."],
+ ["Hope (UAE)","#F5B85C",null,30000,1.66,25,1,1,"The Emirates' weather satellite of Mars, watching whole-planet atmospheric cycles from a huge science orbit."],
+ ["Phobos & Deimos","#C4CCDB",null,9376,1.5,1,1,2,"Mars' two small moons. Phobos orbits faster than Mars rotates — it rises in the west — and is the target of JAXA's MMX sample-return mission."],
+ ["Surface rovers","#34D399",null,0,1,0,0,0,"NASA's active surface fleet.",[[18.4,77.5,"Perseverance — Jezero Crater, caching samples for Mars Sample Return"],[ -5.4,137.8,"Curiosity — climbing Mount Sharp in Gale Crater since 2012"]]],
+];
+const BODY_STYLE={
+ earth:{grad:["#1C2444","#121A33","#0B0F1F"],rim:"rgba(139,123,255,.3)",atmo:"rgba(91,123,255,.13)",note:"ALTITUDES COMPRESSED FOR READABILITY · CONSTELLATION GEOMETRY REPRESENTATIVE"},
+ mars:{grad:["#4A2418","#331812","#1E0E0A"],rim:"rgba(245,150,92,.35)",atmo:"rgba(245,150,92,.10)",note:"ALTITUDES COMPRESSED · REAL MARS ORBITER FLEET · SURFACE STYLIZED"},
+};
+function buildGroups(defs){
+  return defs.map((def,gi)=>{
+    const grp={def,on:true,idx:gi,sats:[]};
+    if(def[10]||def[9]&&Array.isArray(def[9])){ /* surface group */
+      const sites=def[9];
+      sites.forEach(([lat,lon,site])=>grp.sats.push({surf:true,lat:lat*Math.PI/180,lon:lon*Math.PI/180,site,g:gi}));
+      return grp;
+    }
+    const visR=def[4],incl=def[5]*Math.PI/180,planes=def[6],perPlane=def[7];
+    for(let p=0;p<planes;p++){
+      const raan=(p/planes)*Math.PI*2;
+      for(let s=0;s<perPlane;s++){
+        grp.sats.push({g:gi,raan,incl,ph:(s/perPlane)*Math.PI*2+(p%2)*(Math.PI/perPlane),r:visR,
+          w:0.55/Math.pow(visR,3)*3,geo:def[0]==="GEO belt"});
+      }
+    }
+    /* Deimos slower & farther: tweak second moon */
+    if(def[0].startsWith("Phobos")&&grp.sats[1]){grp.sats[1].r=1.72;grp.sats[1].w*= .4;grp.sats[1].ph+=2.1}
+    return grp;
+  });
+}
+function orbitInit(){
+  if(ORBIT.inited)return;ORBIT.inited=true;
+  /* Earth land from real mask */
+  const bin=atob(LAND_B64);const COLS=144,ROWS=72;
+  for(let r=0;r<ROWS;r++){
+    const lat=(-90+1.25+r*2.5)*Math.PI/180;
+    if(Math.abs(lat)>1.45)continue;
+    const step=Math.max(1,Math.round(1/Math.cos(lat)));
+    for(let c=0;c<COLS;c+=step){
+      const i=r*COLS+c;
+      if(!((bin.charCodeAt(i>>3)>>(7-(i&7)))&1))continue;
+      const lon=(-180+1.25+c*2.5)*Math.PI/180;
+      ORBIT.landEarth.push([Math.cos(lat)*Math.sin(lon),Math.sin(lat),Math.cos(lat)*Math.cos(lon),0]);
+    }
+  }
+  /* Mars surface: stylized terrain noise + polar ice caps */
+  const rnd=mulberry32(4242);
+  const noise={};
+  for(let r=0;r<ROWS;r++){
+    const latD=-90+1.25+r*2.5, lat=latD*Math.PI/180;
+    if(Math.abs(lat)>1.5)continue;
+    const step=Math.max(1,Math.round(1/Math.cos(lat)));
+    for(let c=0;c<COLS;c+=step){
+      const lonD=-180+1.25+c*2.5, lon=lonD*Math.PI/180;
+      const cap=Math.abs(latD)>74;
+      /* smooth-ish noise: average of neighbor hashes for patchy terrain */
+      const h=(a,b)=>{const k=a+"_"+b;if(!(k in noise))noise[k]=mulberry32(a*73856093^b*19349663)();return noise[k]};
+      const rr=Math.round(r/2),cc=Math.round(c/2);
+      const v=(h(rr,cc)+h(rr+1,cc)+h(rr,cc+1)+h(rr+1,cc+1))/4;
+      if(!cap&&v<0.42)continue;               /* patchy: skip low-noise cells */
+      const shade=cap?2:(0.4+v*0.6);
+      ORBIT.landMars.push([Math.cos(lat)*Math.sin(lon),Math.sin(lat),Math.cos(lat)*Math.cos(lon),shade]);
+    }
+  }
+  ORBIT.allGroups.earth=buildGroups(EARTH_CONS);
+  ORBIT.allGroups.mars=buildGroups(MARS_CONS);
+  ORBIT.groups=ORBIT.allGroups.earth;
+  const cv=document.getElementById("globe"),wrap=document.getElementById("globeWrap");
+  let moved=0;
+  function down(x,y){ORBIT.drag={x,y,ry:ORBIT.rotY,tl:ORBIT.tilt};ORBIT.vx=0;moved=0;wrap.classList.add("grabbing")}
+  function move(x,y){if(!ORBIT.drag)return;
+    moved=Math.max(moved,Math.abs(x-ORBIT.drag.x)+Math.abs(y-ORBIT.drag.y));
+    const nr=ORBIT.drag.ry+(x-ORBIT.drag.x)*.0055;
+    ORBIT.vx=(nr-ORBIT.rotY)*.5+ORBIT.vx*.5;ORBIT.rotY=nr;
+    ORBIT.tilt=Math.max(-1.2,Math.min(1.2,ORBIT.drag.tl-(y-ORBIT.drag.y)*.004));}
+  function up(){ORBIT.drag=null;wrap.classList.remove("grabbing")}
+  wrap.addEventListener("mousedown",e=>down(e.clientX,e.clientY));
+  window.addEventListener("mousemove",e=>move(e.clientX,e.clientY));
+  window.addEventListener("mouseup",up);
+  wrap.addEventListener("touchstart",e=>{const t=e.touches[0];if(t)down(t.clientX,t.clientY)},{passive:true});
+  wrap.addEventListener("touchmove",e=>{const t=e.touches[0];if(t)move(t.clientX,t.clientY)},{passive:true});
+  wrap.addEventListener("touchend",e=>{
+    up();
+    if(moved<8&&e.changedTouches[0])orbitPick(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+  });
+  cv.addEventListener("click",e=>{if(moved<8)orbitPick(e.clientX,e.clientY)});
+  document.getElementById("spdCtl").addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    ORBIT.spd=+b.dataset.s;
+    document.querySelectorAll("#spdCtl button").forEach(x=>x.classList.toggle("active",x===b));
+  });
+  document.getElementById("bodyCtl").addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b||b.dataset.b===ORBIT.body)return;
+    setBody(b.dataset.b);
+  });
+  document.getElementById("ctxAst").onclick=()=>setView("ipo");
+  document.getElementById("ctxAI").onclick=()=>openCo("PL");
+  document.getElementById("orbitLegend").addEventListener("click",e=>{
+    const l=e.target.closest(".lg");if(!l)return;
+    const g=ORBIT.groups[+l.dataset.g];g.on=!g.on;
+    if(ORBIT.selGrp===g)selectSat(null,null);
+    buildOrbitLegend();
+  });
+  buildOrbitLegend();
+}
+function setBody(body){
+  ORBIT.body=body;
+  ORBIT.groups=ORBIT.allGroups[body];
+  selectSat(null,null);
+  document.querySelectorAll("#bodyCtl button").forEach(x=>x.classList.toggle("active",x.dataset.b===body));
+  document.getElementById("globeNote").textContent=BODY_STYLE[body].note;
+  /* swap the first two context tiles */
+  const c1=document.getElementById("ctx1"),c2=document.getElementById("ctx2");
+  if(body==="mars"){
+    c1.innerHTML='<div class="n">11</div><div class="k"><b>Active spacecraft at Mars</b> — 8 orbiters, 2 moons tracked, 2 rovers driving. Every one shown here is real.</div>';
+    c2.innerHTML='<div class="n">ESCAPADE</div><div class="k"><b>Rocket Lab built twin Mars probes</b> — interplanetary science at smallsat cost. Tap them in orbit, or view RKLB →</div>';
+    c2.classList.add("link");c2.onclick=()=>openCo("RKLB");
+  }else{
+    c1.innerHTML='<div class="n">~12,900</div><div class="k"><b>Active satellites</b> in orbit — up ~4× in five years as launch costs fell 95%+</div>';
+    c2.innerHTML='<div class="n">66</div><div class="k"><b>Iridium\u2019s lattice</b> — 6 planes × 11 satellites, the geometry shown here is the real design</div>';
+    c2.classList.remove("link");c2.onclick=null;
+  }
+  buildOrbitLegend();
+}
+function buildOrbitLegend(){
+  document.getElementById("orbitLegend").innerHTML=ORBIT.groups.map(g=>{
+    const name=g.def[0],color=g.def[1],tkr=g.def[2];
+    return `<div class="lg ${g.on?"":"off"}" data-g="${g.idx}" style="color:${color}">
+      <span class="dot" style="background:${color}"></span>
+      <span class="nm" style="color:var(--ink)">${name}</span>
+      ${tkr?`<span class="ntag" style="--tcol:${color}">${tkr}</span>`:""}
+      <span class="ct">${g.sats.length}</span></div>`;
+  }).join("");
+  const total=ORBIT.groups.filter(g=>g.on).reduce((a,g)=>a+g.sats.length,0);
+  document.getElementById("satCount").textContent=total+(ORBIT.body==="mars"?" AT MARS":" SATELLITES SHOWN");
+}
+function satPos3(s){
+  if(s.surf){
+    const lon=s.lon+ORBIT.earthSpin;
+    return [Math.cos(s.lat)*Math.sin(lon),Math.sin(s.lat),Math.cos(s.lat)*Math.cos(lon)];
+  }
+  const ang=s.geo?(ORBIT.earthSpin+s.ph):(s.ph+ORBIT.t*s.w);
+  const x0=Math.cos(ang)*s.r, z0=Math.sin(ang)*s.r;
+  const y1=z0*Math.sin(s.incl);
+  const z1=z0*Math.cos(s.incl);
+  const x2=x0*Math.cos(s.raan)-z1*Math.sin(s.raan);
+  const z2=x0*Math.sin(s.raan)+z1*Math.cos(s.raan);
+  return [x2,y1,z2];
+}
+function viewRot(v){
+  const x=v[0],y=v[1],z=v[2];
+  const cy=Math.cos(ORBIT.rotY),sy=Math.sin(ORBIT.rotY);
+  const x1=x*cy+z*sy, z1=-x*sy+z*cy;
+  const ct=Math.cos(ORBIT.tilt),st=Math.sin(ORBIT.tilt);
+  return [x1, y*ct - z1*st, y*st + z1*ct];
+}
+let _satScreen=[];
+function orbitFrame(ts){
+  if(!ORBIT.running)return;
+  const dt=Math.min(50,ts-(ORBIT.last||ts));ORBIT.last=ts;
+  ORBIT.t+=dt*.001*ORBIT.spd;
+  ORBIT.earthSpin+=dt*.00003*ORBIT.spd;
+  if(!ORBIT.drag){ORBIT.rotY+=ORBIT.vx;ORBIT.vx*=.94;ORBIT.rotY+=dt*.00002}
+  drawGlobe();
+  ORBIT.raf=requestAnimationFrame(orbitFrame);
+}
+function drawGlobe(){
+  const cv=document.getElementById("globe"),wrap=document.getElementById("globeWrap");
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(!W||!H)return;
+  if(cv.width!==Math.round(W*dpr)){cv.width=W*dpr;cv.height=H*dpr}
+  const ctx=cv.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,R=Math.min(W,H)*.30;
+  const st=BODY_STYLE[ORBIT.body];
+  let g=ctx.createRadialGradient(cx,cy,R*.9,cx,cy,R*1.5);
+  g.addColorStop(0,st.atmo);g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R*1.5,0,7);ctx.fill();
+  _satScreen=[];
+  const rings=[];
+  ORBIT.groups.forEach(grp=>{
+    if(!grp.on)return;
+    const color=grp.def[1];
+    const seen={};
+    grp.sats.forEach(s=>{
+      if(!s.surf){
+        const key=s.raan.toFixed(2)+"_"+s.r;
+        if(!seen[key]){seen[key]=1;rings.push({s,color})}
+      }
+      const p=viewRot(satPos3(s));
+      _satScreen.push({x:cx+p[0]*R*(s.surf?1.005:1),y:cy-p[1]*R*(s.surf?1.005:1),z:p[2],rho:Math.hypot(p[0],p[1]),s,color,grp});
+    });
+  });
+  rings.forEach(rg=>{
+    ctx.strokeStyle=rg.color;ctx.globalAlpha=.13;ctx.lineWidth=1;
+    ctx.beginPath();
+    for(let a=0;a<=72;a++){
+      const tmp={raan:rg.s.raan,incl:rg.s.incl,r:rg.s.r,geo:false,w:0,ph:(a/72)*Math.PI*2};
+      const p=viewRot(satPos3(tmp));
+      const x=cx+p[0]*R,y=cy-p[1]*R;
+      a===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();ctx.globalAlpha=1;
+  });
+  g=ctx.createRadialGradient(cx-R*.35,cy-R*.4,R*.1,cx,cy,R);
+  g.addColorStop(0,st.grad[0]);g.addColorStop(.65,st.grad[1]);g.addColorStop(1,st.grad[2]);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
+  ctx.strokeStyle=st.rim;ctx.lineWidth=1.2;ctx.stroke();
+  const cs=Math.cos(ORBIT.earthSpin),sn=Math.sin(ORBIT.earthSpin);
+  const land=ORBIT.body==="earth"?ORBIT.landEarth:ORBIT.landMars;
+  land.forEach(v=>{
+    const x=v[0]*cs+v[2]*sn, z=-v[0]*sn+v[2]*cs;
+    const p=viewRot([x,v[1],z]);
+    if(p[2]<0.02)return;
+    const d=(.35+p[2]*.65);
+    if(ORBIT.body==="earth")ctx.fillStyle="rgba(120,190,255,"+(.55*d).toFixed(2)+")";
+    else if(v[3]===2)ctx.fillStyle="rgba(240,240,250,"+(.8*d).toFixed(2)+")";
+    else ctx.fillStyle="rgba(235,140,90,"+(.5*d*v[3]).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(cx+p[0]*R,cy-p[1]*R,R*.011*(.6+p[2]*.6),0,7);ctx.fill();
+  });
+  const t2=performance.now()*.003;
+  _satScreen.sort((a,b)=>a.z-b.z).forEach(rec=>{
+    const hidden=rec.z<0&&rec.rho<1;
+    if(hidden)return;
+    const isMoon=rec.grp.def[0].startsWith("Phobos");
+    const rr=(rec.s.surf?3:(rec.s.geo||isMoon)?2.8:2.1)*(0.8+Math.max(rec.z,0)*.45);
+    if(rec.s.surf){ /* pulsing surface marker */
+      ctx.strokeStyle=rec.color;ctx.globalAlpha=.5;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(rec.x,rec.y,rr+2.5+Math.sin(t2*2.4)*1.5,0,7);ctx.stroke();ctx.globalAlpha=1;
+    }
+    if(ORBIT.sel===rec.s){
+      ctx.strokeStyle=rec.color;ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.arc(rec.x,rec.y,rr+4.5+Math.sin(t2*3)*1.6,0,7);ctx.stroke();
+    }
+    ctx.globalAlpha=rec.z<0?.4:1;
+    ctx.fillStyle=rec.color;
+    ctx.beginPath();ctx.arc(rec.x,rec.y,rr,0,7);ctx.fill();
+    ctx.globalAlpha=1;
+  });
+}
+function orbitPick(clientX,clientY){
+  const cv=document.getElementById("globe"),r=cv.getBoundingClientRect();
+  const mx=clientX-r.left,my=clientY-r.top;
+  let best=null,bd=15;
+  _satScreen.forEach(rec=>{
+    if(rec.z<0&&rec.rho<1)return;
+    const d=Math.hypot(mx-rec.x,my-rec.y);
+    if(d<bd){bd=d;best=rec}
+  });
+  selectSat(best?best.s:null,best?best.grp:null);
+}
+function selectSat(s,grp){
+  ORBIT.sel=s;ORBIT.selGrp=grp;
+  const card=document.getElementById("satCard");
+  if(!s){
+    const w=ORBIT.body==="mars"?"orbiter, moon, or rover marker":"dot in orbit";
+    card.innerHTML='<h5>Select a satellite</h5><p class="em">Click or tap any '+w+' to see what it is, who operates it, and which ticker it ties back to.</p>';return;
+  }
+  const name=grp.def[0],color=grp.def[1],tkr=grp.def[2],alt=grp.def[3],incl=grp.def[5],blurb=grp.def[8];
+  let rows;
+  if(s.surf){
+    rows='<div class="row"><span class="k">Type</span><span class="v">Surface rover</span></div>'
+      +'<div class="row"><span class="k">Location</span><span class="v">'+(s.lat*180/Math.PI).toFixed(1)+'&deg;, '+(s.lon*180/Math.PI).toFixed(1)+'&deg;</span></div>';
+  }else{
+    const isMoon=name.startsWith("Phobos");
+    const period=isMoon?(s.r>1.6?"~30 h (Deimos)":"~7.7 h (Phobos)"):alt>25000?"~40+ h science orbit":alt>3000?"elliptical science orbit":"~"+Math.round(100+alt/40)+" min";
+    rows='<div class="row"><span class="k">'+(isMoon?"Mean distance":"Altitude")+'</span><span class="v">'+(isMoon?(s.r>1.6?"23,460":"9,376"):alt.toLocaleString())+' km</span></div>'
+      +'<div class="row"><span class="k">Inclination</span><span class="v">'+incl+'&deg;</span></div>'
+      +'<div class="row"><span class="k">Orbital period</span><span class="v">'+period+'</span></div>';
+  }
+  card.innerHTML='<h5 style="color:'+color+'">'+(s.site?s.site.split(" — ")[0]:name)+'</h5>'
+    +'<div class="sub2">'+(s.surf?"SURFACE ASSET · MARS":ORBIT.body.toUpperCase()+" ORBIT · "+(grp.sats.indexOf(s)+1)+" OF "+grp.sats.length+" SHOWN")+'</div>'
+    +rows
+    +'<p class="desc">'+(s.site?s.site.split(" — ")[1]+". "+blurb:blurb)+'</p>'
+    +(tkr?'<button class="gochip" onclick="openCo(\''+tkr+'\')">VIEW '+tkr+' &rarr;</button>':'');
+}
+function orbitEnter(){orbitInit();if(!ORBIT.running){ORBIT.running=true;ORBIT.last=0;ORBIT.raf=requestAnimationFrame(orbitFrame)}}
+function orbitLeave(){ORBIT.running=false;cancelAnimationFrame(ORBIT.raf)}
 
 /* ---------------- boot ---------------- */
 buildBelt();
 drawIdx();renderMovers();renderHeat();renderTable();
+startNewsTimer();
+setLiveBadge();
 window.addEventListener("resize",()=>{
   if(state.view==="markets")drawIdx();
   if(state.view==="company")drawCoChart();
